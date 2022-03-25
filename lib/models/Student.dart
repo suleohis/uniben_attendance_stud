@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Student{
   final String email;
   final String firstname;
@@ -6,8 +8,9 @@ class Student{
   final bool matricEdited;
   final String img;
   final List lecturesAttend;
+  final bool isLecturer;
 
-  Student({this.email, this.firstname, this.lastname, this.matricNo, this.matricEdited, this.img, this.lecturesAttend});
+  Student({this.isLecturer,this.email, this.firstname, this.lastname, this.matricNo, this.matricEdited, this.img, this.lecturesAttend});
 
   factory Student.fromJson(Map<String, dynamic> json){
     return Student(
@@ -17,7 +20,20 @@ class Student{
         matricNo: json['matric_no'],
         matricEdited: json['matric_edited'],
         img: json['img'],
-      lecturesAttend: json['lectures_attend']
+      lecturesAttend: json['lectures_attend'],
+    );
+  }
+
+  factory Student.fromSnap(DocumentSnapshot snapshot){
+    return Student(
+        email: snapshot['email'],
+        firstname: snapshot['firstname'],
+        lastname: snapshot['lastname'],
+        matricNo: snapshot['matric_no'],
+        matricEdited: snapshot['matric_edited'],
+        img: snapshot['img'],
+        lecturesAttend: snapshot['lectures_attend'],
+      isLecturer: snapshot['isLecturer']
     );
   }
 

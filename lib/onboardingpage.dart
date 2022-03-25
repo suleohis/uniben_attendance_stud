@@ -10,12 +10,12 @@ class OnboardingPage extends StatelessWidget {
       title: "Never miss a class",
       body: "Sign your class attendance sheets from your phone and never miss a class again",
       image: Image.asset("./assets/screen1.png", fit: BoxFit.fill, scale: 1,),
-      decoration: PageDecoration(
+      decoration: const PageDecoration(
         titleTextStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         bodyTextStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w300, color: Colors.grey),
         imageFlex:2,
         imageAlignment: Alignment.center,
-        imagePadding: const EdgeInsets.only(top: 100),
+        imagePadding: EdgeInsets.only(top: 100),
         //titlePadding: const EdgeInsets.only(top: 0)
       ),
     ),
@@ -23,16 +23,18 @@ class OnboardingPage extends StatelessWidget {
         title: "Class attendance history",
         body: "Keep track of all of your class attendance history the easiest way.",
         image: Image.asset("./assets/screen2.png", fit: BoxFit.fill, scale: 1,),
-        decoration: PageDecoration(
+        decoration: const PageDecoration(
           titleTextStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           bodyTextStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w300, color: Colors.grey),
           imageFlex: 2,
           imageAlignment: Alignment.center,
-          imagePadding: const EdgeInsets.only(top: 100),
+          imagePadding: EdgeInsets.only(top: 100),
         ),
     ),
 
   ];
+
+  OnboardingPage({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +43,7 @@ class OnboardingPage extends StatelessWidget {
         color: Colors.green,
         next: Container(
           padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 10),
-          child: Text('Next', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
+          child: const Text('Next', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               color: Colors.green
@@ -53,13 +55,13 @@ class OnboardingPage extends StatelessWidget {
         skip: const Text('Skip', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         done: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Text('Get Started', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
+          child: const Text('Get Started', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               color: Colors.green
           ),
         ),
-        onDone: ()=>Navigator.of(context).push(CupertinoPageRoute(builder: (_)=> HomePage(null)))
+        onDone: ()=>Navigator.of(context).push(CupertinoPageRoute(builder: (_)=>  HomePage(null)))
     );
   }
 }

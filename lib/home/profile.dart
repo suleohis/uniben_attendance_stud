@@ -1,8 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uniben_attendance_stud/auth/loginpage.dart';
 import 'package:uniben_attendance_stud/home/api_requests.dart';
 
 class Profile extends StatefulWidget {
+  const Profile({Key key}) : super(key: key);
+
 
   @override
   _ProfileState createState() => _ProfileState();
@@ -34,28 +38,22 @@ class _ProfileState extends State<Profile> {
       appBar: AppBar(
           actions: [
             TextButton(
-              child: Text('Done', style: TextStyle(color: Colors.white),),
+              child: const Text('Done', style: TextStyle(color: Colors.white),),
               onPressed: (){
                 // save edited data
                 setState(() {
                   loading = true;
                 });
-                editProfile(firstnameController.text, lastnameController.text).then((val){
-                  if(val == 'ok'){
+                editProfile(firstnameController.text, lastnameController.text
+                ,context).then((val){
                     setState(() {
                       loading = false;
                     });
-                    Navigator.of(context).pop();
-                  }else{
-                    setState(() {
-                      loading = false;
-                    });
-                  }
                 });
               },
             )
           ],
-          title: Text('Edit Student Profile'),
+          title: const Text('Edit Student Profile'),
           automaticallyImplyLeading: false,
           leading: BackButton(
             onPressed: (){
@@ -63,15 +61,15 @@ class _ProfileState extends State<Profile> {
             },
           )
       ),
-      body: loading ? Center(child: CircularProgressIndicator()) : Container(
+      body: loading ? const Center(child: CircularProgressIndicator()) : Container(
         margin: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 16),
         child: Column(
           children: [
-            Container(
+            SizedBox(
               height: 50,
               child: TextField(
                 controller: firstnameController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'First name'
                 ),
@@ -80,11 +78,11 @@ class _ProfileState extends State<Profile> {
 
             Container(
               margin: const EdgeInsets.only(top: 16),
-              child: Container(
+              child: SizedBox(
                   height: 50,
                   child: TextField(
                     controller: lastnameController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: 'Last name'
                     ),
@@ -92,17 +90,39 @@ class _ProfileState extends State<Profile> {
               )
             ),
 
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                  margin: const EdgeInsets.only(top: 16),
-                  child: TextButton(
-                    child: Text('Change Password'),
-                    onPressed: (){
-                      // change password
-                    },
-                  )
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                        margin: const EdgeInsets.only(top: 16),
+                        child: TextButton(
+                          child: const Text('Change Password'),
+                          onPressed: (){
+                            // change password
+                          },
+                        )
+                    ),
+                  ),
+                ),
+
+                Container(
+                    margin: const EdgeInsets.only(top: 16),
+                    child: TextButton(
+                      child: const Text('Log Out'),
+                      onPressed: ()async{
+                        SharedPreferences pref =
+                        await SharedPreferences.getInstance();
+                        pref.clear();
+                        FirebaseAuth.instance.signOut();
+                        Navigator.pop(context);
+                        Navigator.pushReplacement(context,
+                            MaterialPageRoute(builder: (context)=>const Login()));
+                      },
+                    )
+                ),
+              ],
             )
 
 

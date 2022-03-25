@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:uniben_attendance_stud/auth/signuppage.dart';
 import 'package:uniben_attendance_stud/home/api_requests.dart';
@@ -5,6 +6,8 @@ import 'package:uniben_attendance_stud/home/homepage.dart';
 import 'package:uniben_attendance_stud/models/lecture.dart';
 
 class Login extends StatefulWidget {
+  const Login({Key key}) : super(key: key);
+
 
   @override
   _LoginState createState() => _LoginState();
@@ -29,7 +32,7 @@ class _LoginState extends State<Login> {
             children: [
               Container(
                   width: MediaQuery.of(context).size.width / 1.2,
-                  child: Align(
+                  child: const Align(
                   child: Text('Login', style: TextStyle(fontSize: 30, color: Colors.white, fontWeight: FontWeight.bold)),
                   alignment: Alignment.centerLeft,
                 ),
@@ -49,7 +52,7 @@ class _LoginState extends State<Login> {
                       onChanged: (val){
                         email = val;
                       },
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         hintText: 'Email/Username',
                         border: InputBorder.none,
                           prefixIcon: Icon(Icons.email)
@@ -68,7 +71,7 @@ class _LoginState extends State<Login> {
                       onChanged: (val){
                         password = val;
                       },
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                           hintText: 'Password',
                           border: InputBorder.none,
                           prefixIcon: Icon(Icons.lock)
@@ -98,7 +101,7 @@ class _LoginState extends State<Login> {
                               borderRadius: BorderRadius.circular(8)
                           ),
                           child: Center(
-                              child: isLoading ? Container(height: 40, width: 40, child: CircularProgressIndicator()) : Text('login'.toUpperCase(), style: TextStyle(color: Colors.black))
+                              child: isLoading ? const SizedBox(height: 40, width: 40, child: CircularProgressIndicator()) : Text('login'.toUpperCase(), style: const TextStyle(color: Colors.black))
                           ),
                         )
                     ),
@@ -112,12 +115,13 @@ class _LoginState extends State<Login> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text('Don\'t have an account?', style: TextStyle()),
+                    const Text('Don\'t have an account?', style: TextStyle()),
                     TextButton(
                         onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(builder: (_)=> SignUp()));
+                          Navigator.of(context).push(MaterialPageRoute(builder:
+                              (_)=> const SignUp()));
                         },
-                        child: Text('Sign Up', style: TextStyle(color: Colors.yellow))
+                        child: const Text('Sign Up', style: TextStyle(color: Colors.yellow))
                     )
                   ],
                 ),
@@ -137,27 +141,25 @@ class _LoginState extends State<Login> {
       isLoading = true;
     });
     if((email == null || email == '') || (password == null || password == '')){
-      print('All fields must be properly entered');
+      if (kDebugMode) {
+        print('All fields must be properly entered');
+        setState(() {
+          isLoading = false;
+        });
+        return;
+      }
+    }
+    loginRequest(email, password,context).then((value){
+
       setState(() {
         isLoading = false;
       });
-      return;
-    }
-    dynamic result = await loginRequest(email, password);
+    });
+
+
     setState(() {
       isLoading = false;
     });
-    if(result is Map){
-      if(result['status'] == 'ok'){
-        gLectures = result['lectures'];
-        print(gLectures);
-        Navigator.of(context).push(MaterialPageRoute(builder: (_) => HomePage(gLectures)));
-      }else{
-        // This is an error
-        print(result);
-      }
-    }else{
-      print(result);
-    }
+    print('failed to login');
   }
 }

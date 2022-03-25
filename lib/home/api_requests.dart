@@ -1,3 +1,9 @@
+// import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -5,134 +11,106 @@ import 'dart:convert';
 import 'package:uniben_attendance_stud/models/Student.dart';
 import 'package:uniben_attendance_stud/models/lecture.dart';
 
-signUpRequest(email, matricNo, password) async {
+import 'homepage.dart';
+
+FirebaseAuth auth = FirebaseAuth.instance;
+
+Future signUpRequest(email, matricNo, password,firstName,lastName,context) async {
   SharedPreferences pref = await SharedPreferences.getInstance();
-  http.Client client = http.Client();
 
   try{
-    http.Response response = await client.post(
-        Uri.https('serene-harbor-85025.herokuapp.com', '/students/signup'),
-        body: json.encode({
-          "email": email,
-          "matric_no": matricNo,
-          "password": password
-        }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-    );
-    dynamic decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
-    print('${decodedResponse['status']}, ${decodedResponse['user']}');
-    List<Lecture> lectures = [];
-    if(decodedResponse['status'] == 'ok'){
-      Student student = Student.fromJson(decodedResponse['user']);
-      pref.setString('token', decodedResponse['token']);
-      pref.setString('firstname', student.firstname);
-      pref.setString('lastname', student.lastname);
-      pref.setString('email', student.email);
-      pref.setBool('logged_in', true);
-      // get lectures
-      decodedResponse['lectures_attend'].forEach((lecture){
-        lectures.add(Lecture.fromJson(lecture));
-      });
+    auth.createUserWithEmailAndPassword(
+        email: email, password: password).then((UserCredential value) {
+          print('laught');
+      FirebaseFirestore.instance.collection('students').
+      doc(auth.currentUser.uid.toString()).set({
+        "email": email,
+        'firstname':firstName,
+        'lastname':lastName,
+        'matric_edited':false,
+        'img': '',
+        'lectures_attend':[],
+        'isLectur':false,
+        'id':auth.currentUser.uid,
+        'matricNo':matricNo,
 
-      return {
-        'status': 'ok',
-        'lectures': lectures
-      };
-    }else{
-      return {
-        'status': 'error',
-        'msg': decodedResponse['msg'].toString()
-      };
-    }
+      }).then((value) {
+        pref.setString('firstname',firstName);
+        pref.setString('lastname', lastName);
+        pref.setString('email',email);
+        pref.setBool('logged_in', true);
+        Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => HomePage(null)));
+      });
+    });
+    print('done with signUp');
   }catch(e){
-    return e;
+    print(e.toString());
   }
 }
 
-loginRequest(email, password) async {
+Future loginRequest(email, password,context) async {
   SharedPreferences pref = await SharedPreferences.getInstance();
-  http.Client client = http.Client();
 
   try{
-    http.Response response = await client.post(
-        Uri.https('serene-harbor-85025.herokuapp.com', '/students/login'),
-        body: json.encode({
-          "email": email,
-          "password": password
-        }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-    );
-    dynamic decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
-    List<Lecture> lectures = [];
-    if(decodedResponse['status'] == 'ok'){
-      Student student = Student.fromJson(decodedResponse['user']);
-      pref.setString('token', decodedResponse['token']);
-      pref.setString('firstname', student.firstname);
-      pref.setString('lastname', student.lastname);
-      pref.setString('email', student.email);
-      pref.setBool('logged_in', true);
-      // get lectures
-      decodedResponse['lectures_attend'].forEach((lecture){
-        lectures.add(Lecture.fromJson(lecture));
-      });
-
-      return {
-        'status': 'ok',
-        'lectures': lectures
-      };
-    }else{
-      return {
-        'status': 'error',
-        'msg': decodedResponse['msg'].toString()
-      };
-    }
+    auth.signInWithEmailAndPassword(email: email, password: password).
+    then((value) {
+       FirebaseFirestore.instance.collection('students')
+          .doc(auth.currentUser.uid.toString()).get().then((DocumentSnapshot docSnap) {
+            Student student = Student.fromSnap(docSnap);
+            pref.setString('firstname', student.firstname);
+            pref.setString('lastname', student.lastname);
+            pref.setString('email', student.email);
+            pref.setBool('logged_in', true);
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => HomePage(null)));
+       });
+    });
+    print('done with login');
   }catch(e){
-    return e;
+    print(e);
   }
 }
 
-attendLectureRequest(lectureToken) async {
+attendLectureRequest(lectureToken,context) async {
   SharedPreferences pref = await SharedPreferences.getInstance();
   String token = pref.getString('token');
 
   http.Client client = http.Client();
   try{
-    http.Response response = await client.post(
-        Uri.https('serene-harbor-85025.herokuapp.com', '/students/attendlecture'),
-        body: json.encode({
-          "token": token,
-          "lectureToken": lectureToken
-        }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-    );
 
-    dynamic decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
-    List<Lecture> lectures = [];
-    if(decodedResponse['status'] == 'ok'){
-      decodedResponse['lectures_attend'].forEach((lecture){
-        lectures.add(Lecture.fromJson(lecture));
-      });
-      return {
-        'status': 'ok',
-        'lectures': lectures
-      };
-    }else{
-      return {
-        'status': 'error',
-        'msg': decodedResponse['msg'].toString()
-      };
-    }
+    FirebaseFirestore.instance.collection('lecturers').doc(lectureToken).get()
+        .then((DocumentSnapshot value) {
+     List val =  value['generateLecture'];
+     Map map = val.last;
+     List attendees = map['attendees'];
+     attendees.add(auth.currentUser.uid);
+     map.update('attendees', (value) => attendees);
+     val.removeLast();
+     val.add(map);
+     FirebaseFirestore.instance.collection('lecturers').doc(lectureToken).update({
+       'generateLecture':val
+     });
+     FirebaseFirestore.instance.collection('students')
+         .doc(auth.currentUser.uid).get().then((doc){
+       List lectureAttend = doc['lectures_attend'];
+       lectureAttend.add(map);
+       FirebaseFirestore.instance.collection('students')
+           .doc(auth.currentUser.uid).update({
+         'lectures_attend':lectureAttend
+       });
+     }).catchError((e){
+
+       ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(content: Text('Failed To Scan')));
+     });
+    }).catchError((e){
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed To Scan')));
+    });
   }catch(e){
-    return {
-      'status': 'error',
-      'msg': e
-    };
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed To Scan')));
   }
 
 
@@ -179,38 +157,24 @@ getLectures() async {
 }
 
 
-editProfile(firstname, lastname) async {
+editProfile(firstname, lastname,context) async {
 
   SharedPreferences pref = await SharedPreferences.getInstance();
-  String token = pref.getString('token');
-
-  http.Client client = http.Client();
 
   try{
-    http.Response response = await client.post(
-        Uri.https('serene-harbor-85025.herokuapp.com', '/students/editprofile'),
-        body: json.encode({
-          "token": token,
-          "firstname": firstname,
-          "lastname": lastname
-        }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-    );
-    dynamic decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
-    print('${decodedResponse['status']}, ${decodedResponse['user']}');
+    FirebaseFirestore.instance.collection('students').
+    doc(auth.currentUser.uid.toString()).update({
+      'firstname':firstname,
+      'lastname':lastname,
+    }).then((value) {
 
-    if(decodedResponse['status'] == 'ok'){
-      
       pref.setString('firstname', firstname);
       pref.setString('lastname', lastname);
+      Navigator.pop(context);
+    });
 
-      return 'ok';
-    }else{
-      return 'error';
-    }
+
   }catch(e){
-    return e;
+    print(e);
   }
 }

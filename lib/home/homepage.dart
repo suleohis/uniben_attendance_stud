@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
@@ -100,7 +101,7 @@ class _HomePageState extends State<HomePage> {
         } else {
           // navigate to login page
           Navigator.of(context)
-              .push(MaterialPageRoute(builder: (_) => Login()));
+              .push(MaterialPageRoute(builder: (_) => const Login()));
         }
       }
     });
@@ -114,7 +115,7 @@ class _HomePageState extends State<HomePage> {
           primarySwatch: Colors.green,
         ),
         home: isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: const CircularProgressIndicator())
             : DefaultTabController(
                 length: 2,
                 child: Scaffold(
@@ -131,9 +132,9 @@ class _HomePageState extends State<HomePage> {
                       actions: [
 
                         IconButton(
-                            icon: Icon(Icons.person, color: Colors.white, size: 30),
+                            icon: const Icon(Icons.person, color: Colors.white, size: 30),
                             onPressed: (){
-                              Navigator.of(context).push(MaterialPageRoute(builder: (_)=> Profile()));
+                              Navigator.of(context).push(MaterialPageRoute(builder: (_)=> const Profile()));
                             }
                         )
                       ],
@@ -212,7 +213,7 @@ class _HomePageState extends State<HomePage> {
                                                             Text(
                                                                 'Tap to Scan'
                                                                     .toUpperCase(),
-                                                                style: TextStyle(
+                                                                style: const TextStyle(
                                                                     color: Colors
                                                                         .white,
                                                                     fontSize:
@@ -223,7 +224,7 @@ class _HomePageState extends State<HomePage> {
                                                                           .only(
                                                                       left: 6),
                                                             ),
-                                                            Icon(
+                                                            const Icon(
                                                               Icons
                                                                   .camera_alt_outlined,
                                                               size: 40,
@@ -234,7 +235,7 @@ class _HomePageState extends State<HomePage> {
                                                         )),
                                                       )),
                                                 ))
-                                            : Container(
+                                            : const SizedBox(
                                                 height: 0,
                                                 width: 0,
                                               ),
@@ -290,7 +291,7 @@ class _HomePageState extends State<HomePage> {
                                                                   crossAxisAlignment:
                                                                       CrossAxisAlignment
                                                                           .center,
-                                                                  children: [
+                                                                  children: const [
                                                                     Icon(
                                                                       Icons
                                                                           .flip_camera_android,
@@ -345,7 +346,7 @@ class _HomePageState extends State<HomePage> {
                                                                     Text(
                                                                         'CANCEL'
                                                                             .toUpperCase(),
-                                                                        style: TextStyle(
+                                                                        style: const TextStyle(
                                                                             color:
                                                                                 Colors.white,
                                                                             fontSize: 18)),
@@ -355,7 +356,7 @@ class _HomePageState extends State<HomePage> {
                                                                           left:
                                                                               6),
                                                                     ),
-                                                                    Icon(
+                                                                    const Icon(
                                                                       Icons
                                                                           .cancel_presentation,
                                                                       size: 40,
@@ -376,47 +377,108 @@ class _HomePageState extends State<HomePage> {
                                     )),
                               ],
                             )),
-                        gLectures.isEmpty ? Center(
-                          child: Container(
-                            margin: const EdgeInsets.only(left: 16, right: 16),
-                            child: Text('You have not attended any lectures yet')
-                          )
-                        ) : ListView.builder(
-                          itemCount: gLectures.length,
-                          itemBuilder: (context, index) {
-                            return ListTile(
-                              title: Text(gLectures[index].courseCode),
-                              subtitle: Text(gLectures[index].courseName == null
-                                  ? 'Test'
-                                  : gLectures[index].courseName),
-                              trailing: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                      '${DateFormat.yMEd().add_jms().format(DateTime.fromMillisecondsSinceEpoch(int.parse(gLectures[index].createdAt)))}',
-                                  style: TextStyle(fontSize: 12),),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.group,
-                                        color: Colors.green,
-                                      ),
-                                      Container(
-                                        margin: const EdgeInsets.only(left: 8),
-                                      ),
-                                      // Text('${snapshot.data[index].attendees.length}')
-                                    ],
-                                  )
-                                ],
+
+                        SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              SizedBox(
+                                height: MediaQuery.of(context).size.height,
+                                child: StreamBuilder(
+                                    stream:  FirebaseFirestore.instance
+                                        .collection('students')
+                                        .doc(auth.currentUser.uid)
+                                        .snapshots(),
+                                    builder: (context,AsyncSnapshot<DocumentSnapshot> snapshot) {
+                                      if(snapshot.hasData){
+                                        DocumentSnapshot docSna = snapshot.data;
+                                        List<dynamic> map = docSna['lectures_attend'];
+                                        return ListView.builder(
+                                          itemCount: map.length,
+                                          itemBuilder: (context, index){
+                                            return ListTile(
+                                              title: Text(map[index]['course_code']),
+                                              subtitle: Text(map[index]['course_name']),
+                                              trailing: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(DateFormat.yMEd().add_jms().format(DateTime.fromMillisecondsSinceEpoch(map[index]['createdAt'])),
+                                                    style: const TextStyle(fontSize: 12),),
+
+                                                ],
+                                              ),
+
+                                            );
+                                          },
+                                        );
+                                      }
+                                      else if (snapshot.hasError){
+
+                                        return Text('${snapshot.error}');
+                                      }
+                                      if(!snapshot.hasData){
+                                        return Center(
+                                            child: Container(
+                                                margin: const EdgeInsets.only(
+                                                  left: 16,
+                                                  right: 16,
+                                                ),
+                                                child: const Text('You have not attended any lectures yet',
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle())
+                                            )
+                                        );
+                                      }
+                                      return const Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    }
+                                ),
                               ),
-                              onTap: () {
-                                //print(snapshot.data[index].attendees[0]['student_id']);
-                                //Navigator.of(context).push(MaterialPageRoute(builder: (_)=> LectureAttendees(attendees: snapshot.data[index].attendees)));
-                              },
-                            );
-                          },
+                            ],
+                          ),
                         )
+                        // gLectures.isEmpty ? Center(
+                        //   child: Container(
+                        //     margin: const EdgeInsets.only(left: 16, right: 16),
+                        //     child: const Text('You have not attended any lectures yet')
+                        //   )
+                        // ) :
+                        // ListView.builder(
+                        //   itemCount: gLectures.length,
+                        //   itemBuilder: (context, index) {
+                        //     return ListTile(
+                        //       title: Text(gLectures[index].courseCode),
+                        //       subtitle: Text(gLectures[index].courseName == null
+                        //           ? 'Test'
+                        //           : gLectures[index].courseName),
+                        //       trailing: Column(
+                        //         mainAxisSize: MainAxisSize.min,
+                        //         children: [
+                        //           Text(
+                        //               '${DateFormat.yMEd().add_jms().format(DateTime.fromMillisecondsSinceEpoch(int.parse(gLectures[index].createdAt)))}',
+                        //           style: const TextStyle(fontSize: 12),),
+                        //           Row(
+                        //             mainAxisSize: MainAxisSize.min,
+                        //             children: [
+                        //               const Icon(
+                        //                 Icons.group,
+                        //                 color: Colors.green,
+                        //               ),
+                        //               Container(
+                        //                 margin: const EdgeInsets.only(left: 8),
+                        //               ),
+                        //               // Text('${snapshot.data[index].attendees.length}')
+                        //             ],
+                        //           )
+                        //         ],
+                        //       ),
+                        //       onTap: () {
+                        //         //print(snapshot.data[index].attendees[0]['student_id']);
+                        //         //Navigator.of(context).push(MaterialPageRoute(builder: (_)=> LectureAttendees(attendees: snapshot.data[index].attendees)));
+                        //       },
+                        //     );
+                        //   },
+                        // )
                       ],
                     ))));
   }
@@ -444,16 +506,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       isLoading = true;
     });
-    dynamic result = await attendLectureRequest(lectureToken);
-    if (result['status'] == 'ok') {
-      gLectures = result['lectures'];
-
-      print(gLectures);
-      print('Attendance taken');
-    } else {
-      // This is an error
-      print(result);
-    }
+    dynamic result = await attendLectureRequest(lectureToken,context);
     setState(() {
       isLoading = false;
     });
