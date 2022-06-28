@@ -4,8 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uniben_attendance_stud/auth/loginpage.dart';
 import 'package:uniben_attendance_stud/home/api_requests.dart';
 
+import 'change_password.dart';
+
 class Profile extends StatefulWidget {
-  const Profile({Key key}) : super(key: key);
+  const Profile({Key? key}) : super(key: key);
 
 
   @override
@@ -16,7 +18,7 @@ class _ProfileState extends State<Profile> {
 
   TextEditingController firstnameController = TextEditingController();
   TextEditingController lastnameController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
+  TextEditingController matricController = TextEditingController();
 
   @override
   void initState() {
@@ -24,9 +26,9 @@ class _ProfileState extends State<Profile> {
     super.initState();
 
     SharedPreferences.getInstance().then((SharedPreferences prefs){
-      firstnameController.text = prefs.getString('firstname');
-      lastnameController.text = prefs.getString('lastname');
-      emailController.text = prefs.getString('email');
+      firstnameController.text = prefs.getString('firstname')!;
+      lastnameController.text = prefs.getString('lastname')!;
+      matricController.text = prefs.getString('matricNo')!;
     });
 
   }
@@ -44,8 +46,8 @@ class _ProfileState extends State<Profile> {
                 setState(() {
                   loading = true;
                 });
-                editProfile(firstnameController.text, lastnameController.text
-                ,context).then((val){
+                editProfile(firstnameController.text.trim(), lastnameController.text.trim(),
+                    matricController.text.trim(),context).then((val){
                     setState(() {
                       loading = false;
                     });
@@ -90,6 +92,19 @@ class _ProfileState extends State<Profile> {
               )
             ),
 
+            Container(
+                margin: const EdgeInsets.only(top: 16),
+                child: SizedBox(
+                    height: 50,
+                    child: TextField(
+                      controller: matricController,
+                      decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'Matric No'
+                      ),
+                    )
+                )
+            ),
             Row(
               children: [
                 Expanded(
@@ -100,7 +115,11 @@ class _ProfileState extends State<Profile> {
                         child: TextButton(
                           child: const Text('Change Password'),
                           onPressed: (){
-                            // change password
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                    const ChangePassword()));
                           },
                         )
                     ),

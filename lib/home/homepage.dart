@@ -12,9 +12,10 @@ import 'package:uniben_attendance_stud/models/Student.dart';
 import 'package:uniben_attendance_stud/models/lecture.dart';
 import 'package:uniben_attendance_stud/onboardingpage.dart';
 
-Student user;
+Student? user;
+
 class HomePage extends StatefulWidget {
-  final List<Lecture> lectures;
+  final List<Lecture>? lectures;
   HomePage(this.lectures);
   @override
   _HomePageState createState() => _HomePageState(lectures);
@@ -22,9 +23,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  Barcode result;
-  QRViewController controller;
-  List<Lecture> lectures;
+  Barcode? result;
+  QRViewController? controller;
+  List<Lecture>? lectures = [];
   _HomePageState(this.lectures);
 
   @override
@@ -63,12 +64,12 @@ class _HomePageState extends State<HomePage> {
       } else {
         // check if the user is logged in
         if (prefs.getBool('logged_in') ?? false) {
+          String? firstname = prefs.getString('firstname');
+          String? lastname = prefs.getString('lastname');
+          String? email = prefs.getString('email');
 
-          String firstname = prefs.getString('firstname');
-          String lastname = prefs.getString('lastname');
-          String email = prefs.getString('email');
-
-          user = new Student(firstname: firstname, lastname: lastname, email: email);
+          user = Student(
+              firstname: firstname!, lastname: lastname!, email: email!);
 
           setState(() {
             isLoading = false;
@@ -115,28 +116,29 @@ class _HomePageState extends State<HomePage> {
           primarySwatch: Colors.green,
         ),
         home: isLoading
-            ? const Center(child: const CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : DefaultTabController(
                 length: 2,
                 child: Scaffold(
                     appBar: AppBar(
-                        title: Text('Hi ${user.firstname},'),
-                        bottom: const TabBar(
-                          tabs: [
-                            Tab(
-                                icon: Icon(Icons.qr_code_rounded),
-                                text: 'Attend Lecture'),
-                            Tab(icon: Icon(Icons.list), text: 'Lectures Attended')
-                          ],
-                        ),
+                       title: Text(
+                          'Hi ${user!.firstname! + ' ' + user!.lastname!},'),
+                      bottom: const TabBar(
+                        tabs: [
+                          Tab(
+                              icon: Icon(Icons.qr_code_rounded),
+                              text: 'Attend Lecture'),
+                          Tab(icon: Icon(Icons.list), text: 'Lectures Attended')
+                        ],
+                      ),
                       actions: [
-
                         IconButton(
-                            icon: const Icon(Icons.person, color: Colors.white, size: 30),
-                            onPressed: (){
-                              Navigator.of(context).push(MaterialPageRoute(builder: (_)=> const Profile()));
-                            }
-                        )
+                            icon: const Icon(Icons.person,
+                                color: Colors.white, size: 30),
+                            onPressed: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (_) => const Profile()));
+                            })
                       ],
                     ),
                     body: TabBarView(
@@ -269,7 +271,7 @@ class _HomePageState extends State<HomePage> {
                                                                       .circular(
                                                                           8),
                                                               onTap: () async {
-                                                                await controller
+                                                                await controller!
                                                                     .flipCamera();
                                                               },
                                                               child: Container(
@@ -369,7 +371,7 @@ class _HomePageState extends State<HomePage> {
                                                         ))
                                                   ],
                                                 ))
-                                            : Container(
+                                            : const SizedBox(
                                                 height: 0,
                                                 width: 0,
                                               )
@@ -384,55 +386,63 @@ class _HomePageState extends State<HomePage> {
                               SizedBox(
                                 height: MediaQuery.of(context).size.height,
                                 child: StreamBuilder(
-                                    stream:  FirebaseFirestore.instance
+                                    stream: FirebaseFirestore.instance
                                         .collection('students')
-                                        .doc(auth.currentUser.uid)
+                                        .doc(auth.currentUser!.uid)
                                         .snapshots(),
-                                    builder: (context,AsyncSnapshot<DocumentSnapshot> snapshot) {
-                                      if(snapshot.hasData){
-                                        DocumentSnapshot docSna = snapshot.data;
-                                        List<dynamic> map = docSna['lectures_attend'];
+                                    builder: (context,
+                                        AsyncSnapshot<DocumentSnapshot>
+                                            snapshot) {
+                                      if (snapshot.hasData) {
+                                        DocumentSnapshot docSna =
+                                            snapshot.data!;
+                                        List<dynamic> map =
+                                            docSna['lectures_attend'];
                                         return ListView.builder(
                                           itemCount: map.length,
-                                          itemBuilder: (context, index){
+                                          itemBuilder: (context, index) {
                                             return ListTile(
-                                              title: Text(map[index]['course_code']),
-                                              subtitle: Text(map[index]['course_name']),
+                                              title: Text(
+                                                  map[index]['course_code']),
+                                              subtitle: Text(
+                                                  map[index]['course_name']),
                                               trailing: Column(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  Text(DateFormat.yMEd().add_jms().format(DateTime.fromMillisecondsSinceEpoch(map[index]['createdAt'])),
-                                                    style: const TextStyle(fontSize: 12),),
-
+                                                  Text(
+                                                    DateFormat.yMEd()
+                                                        .add_jms()
+                                                        .format(DateTime
+                                                            .fromMillisecondsSinceEpoch(
+                                                                map[index][
+                                                                    'createdAt'])),
+                                                    style: const TextStyle(
+                                                        fontSize: 12),
+                                                  ),
                                                 ],
                                               ),
-
                                             );
                                           },
                                         );
-                                      }
-                                      else if (snapshot.hasError){
-
+                                      } else if (snapshot.hasError) {
                                         return Text('${snapshot.error}');
                                       }
-                                      if(!snapshot.hasData){
+                                      if (!snapshot.hasData) {
                                         return Center(
                                             child: Container(
                                                 margin: const EdgeInsets.only(
                                                   left: 16,
                                                   right: 16,
                                                 ),
-                                                child: const Text('You have not attended any lectures yet',
+                                                child: const Text(
+                                                    'You have not attended any lectures yet',
                                                     textAlign: TextAlign.center,
-                                                    style: TextStyle())
-                                            )
-                                        );
+                                                    style: TextStyle())));
                                       }
                                       return const Center(
                                         child: CircularProgressIndicator(),
                                       );
-                                    }
-                                ),
+                                    }),
                               ),
                             ],
                           ),
@@ -506,7 +516,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       isLoading = true;
     });
-    dynamic result = await attendLectureRequest(lectureToken,context);
+    dynamic result = await attendLectureRequest(lectureToken, context);
     setState(() {
       isLoading = false;
     });
@@ -514,7 +524,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    controller.dispose();
+    controller!.dispose();
     super.dispose();
   }
 }

@@ -34,7 +34,7 @@ class OnboardingPage extends StatelessWidget {
 
   ];
 
-  OnboardingPage({Key key}) : super(key: key);
+  OnboardingPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

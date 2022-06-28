@@ -3,11 +3,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:uniben_attendance_stud/home/api_requests.dart';
-import 'package:uniben_attendance_stud/home/homepage.dart';
 import 'package:uniben_attendance_stud/models/lecture.dart';
 
 class SignUp extends StatefulWidget {
-  const SignUp({Key key}) : super(key: key);
+  const SignUp({Key? key}) : super(key: key);
 
 
   @override
@@ -16,11 +15,11 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp> {
 
-  String email;
-  String matricNo;
-  String password;
-  String firstName;
-  String lastName;
+  String? email;
+  String? matricNo;
+  String? password;
+  String? firstName;
+  String? lastName;
   bool isLoading = false;
 
   @override

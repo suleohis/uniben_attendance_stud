@@ -1,8 +1,6 @@
 // import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -23,21 +21,22 @@ Future signUpRequest(email, matricNo, password,firstName,lastName,context) async
         email: email, password: password).then((UserCredential value) {
           print('laught');
       FirebaseFirestore.instance.collection('students').
-      doc(auth.currentUser.uid.toString()).set({
+      doc(auth.currentUser!.uid.toString()).set({
         "email": email,
         'firstname':firstName,
         'lastname':lastName,
         'matric_edited':false,
         'img': '',
         'lectures_attend':[],
-        'isLectur':false,
-        'id':auth.currentUser.uid,
+        'isLecturer':false,
+        'id':auth.currentUser!.uid,
         'matricNo':matricNo,
 
       }).then((value) {
         pref.setString('firstname',firstName);
         pref.setString('lastname', lastName);
         pref.setString('email',email);
+        pref.setString('matricNo', matricNo);
         pref.setBool('logged_in', true);
         Navigator.of(context).push(
             MaterialPageRoute(builder: (context) => HomePage(null)));
@@ -56,11 +55,12 @@ Future loginRequest(email, password,context) async {
     auth.signInWithEmailAndPassword(email: email, password: password).
     then((value) {
        FirebaseFirestore.instance.collection('students')
-          .doc(auth.currentUser.uid.toString()).get().then((DocumentSnapshot docSnap) {
+          .doc(auth.currentUser!.uid.toString()).get().then((DocumentSnapshot docSnap) {
             Student student = Student.fromSnap(docSnap);
-            pref.setString('firstname', student.firstname);
-            pref.setString('lastname', student.lastname);
-            pref.setString('email', student.email);
+            pref.setString('firstname', student.firstname!);
+            pref.setString('lastname', student.lastname!);
+            pref.setString('email', student.email!);
+            pref.setString('matricNo', student.matricNo!);
             pref.setBool('logged_in', true);
             Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => HomePage(null)));
@@ -74,9 +74,7 @@ Future loginRequest(email, password,context) async {
 
 attendLectureRequest(lectureToken,context) async {
   SharedPreferences pref = await SharedPreferences.getInstance();
-  String token = pref.getString('token');
 
-  http.Client client = http.Client();
   try{
 
     FirebaseFirestore.instance.collection('lecturers').doc(lectureToken).get()
@@ -84,19 +82,21 @@ attendLectureRequest(lectureToken,context) async {
      List val =  value['generateLecture'];
      Map map = val.last;
      List attendees = map['attendees'];
-     attendees.add(auth.currentUser.uid);
-     map.update('attendees', (value) => attendees);
-     val.removeLast();
-     val.add(map);
+    if(!attendees.contains(auth.currentUser!.uid)){
+      attendees.add(auth.currentUser!.uid);
+      map.update('attendees', (value) => attendees);
+      val.removeLast();
+      val.add(map);
+    }
      FirebaseFirestore.instance.collection('lecturers').doc(lectureToken).update({
        'generateLecture':val
      });
      FirebaseFirestore.instance.collection('students')
-         .doc(auth.currentUser.uid).get().then((doc){
+         .doc(auth.currentUser!.uid).get().then((doc){
        List lectureAttend = doc['lectures_attend'];
        lectureAttend.add(map);
        FirebaseFirestore.instance.collection('students')
-           .doc(auth.currentUser.uid).update({
+           .doc(auth.currentUser!.uid).update({
          'lectures_attend':lectureAttend
        });
      }).catchError((e){
@@ -118,7 +118,7 @@ attendLectureRequest(lectureToken,context) async {
 
 getLectures() async {
   SharedPreferences pref = await SharedPreferences.getInstance();
-  String token = pref.getString('token');
+  String? token = pref.getString('token');
 
   http.Client client = http.Client();
   try{
@@ -157,19 +157,21 @@ getLectures() async {
 }
 
 
-editProfile(firstname, lastname,context) async {
+editProfile(firstname, lastname,matricNo , BuildContext context) async {
 
   SharedPreferences pref = await SharedPreferences.getInstance();
 
   try{
     FirebaseFirestore.instance.collection('students').
-    doc(auth.currentUser.uid.toString()).update({
+    doc(auth.currentUser!.uid.toString()).update({
       'firstname':firstname,
       'lastname':lastname,
+      'matricNo':matricNo
     }).then((value) {
 
       pref.setString('firstname', firstname);
       pref.setString('lastname', lastname);
+      pref.setString('matricNo', matricNo);
       Navigator.pop(context);
     });
 

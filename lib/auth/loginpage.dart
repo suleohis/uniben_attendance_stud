@@ -2,11 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:uniben_attendance_stud/auth/signuppage.dart';
 import 'package:uniben_attendance_stud/home/api_requests.dart';
-import 'package:uniben_attendance_stud/home/homepage.dart';
 import 'package:uniben_attendance_stud/models/lecture.dart';
 
+import 'forget password.dart';
+
 class Login extends StatefulWidget {
-  const Login({Key key}) : super(key: key);
+  const Login({Key? key}) : super(key: key);
 
 
   @override
@@ -15,8 +16,9 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
 
-  String email;
-  String password;
+  String? email;
+  String? password;
+  bool seePassword = false;
   bool isLoading = false;
 
   @override
@@ -65,17 +67,29 @@ class _LoginState extends State<Login> {
                         margin: const EdgeInsets.only(top: 4)
                     ),
 
+
                     TextField(
-                      enabled: !isLoading,
-                      obscureText: true,
-                      onChanged: (val){
+                      onChanged: (val) {
                         password = val;
                       },
-                      decoration: const InputDecoration(
+                      obscureText: !seePassword,
+                      decoration: InputDecoration(
                           hintText: 'Password',
                           border: InputBorder.none,
-                          prefixIcon: Icon(Icons.lock)
-                      ),
+                          prefixIcon: const Icon(Icons.lock),
+                          suffixIcon: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  seePassword = !seePassword;
+                                });
+                              },
+                              icon: Icon(
+                                seePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                size: 30,
+                              ))),
+                      enabled: !isLoading,
                     ),
                   ],
                 ),
@@ -128,6 +142,28 @@ class _LoginState extends State<Login> {
               ),
 
 
+              Container(
+                width: MediaQuery.of(context).size.width / 1.2,
+                margin: const EdgeInsets.only(top: 12),
+
+                child: Wrap(
+                  runAlignment: WrapAlignment.center,
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    const Text('I Forgot Must Password? ',
+                        style: TextStyle()),
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => const ForgetPassword()));
+                        },
+                        child: const Text('Forget Password',
+                            style: TextStyle(
+                                color: Colors.yellow)))
+                  ],
+                ),
+              ),
             ],
           ),
         )
