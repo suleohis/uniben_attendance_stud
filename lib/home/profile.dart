@@ -133,7 +133,10 @@ class _ProfileState extends State<Profile> {
                       onPressed: ()async{
                         SharedPreferences pref =
                         await SharedPreferences.getInstance();
-                        pref.clear();
+                        pref.remove('firstname');
+                        pref.remove('lastname');
+                        pref.remove('email');
+                        pref.remove('matricNo');
                         FirebaseAuth.instance.signOut();
                         Navigator.pop(context);
                         Navigator.pushReplacement(context,
