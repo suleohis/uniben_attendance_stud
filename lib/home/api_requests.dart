@@ -41,6 +41,17 @@ Future signUpRequest(email, matricNo, password,firstName,lastName,context) async
         Navigator.of(context).push(
             MaterialPageRoute(builder: (context) => HomePage(null)));
       });
+    }).catchError((e) {
+      String error = '[firebase_auth/email-already-in-use] The email address is already in use by another account.';
+      if (e.toString().contains(error)) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('This Account Already Exist')));
+      } else {
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Network Problems')));
+      }
+      print(e);
     });
     print('done with signUp');
   }catch(e){
@@ -65,6 +76,17 @@ Future loginRequest(email, password,context) async {
             Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => HomePage(null)));
        });
+    }).catchError((e) {
+      String error = '[firebase_auth/user-not-found] There is no user record corresponding to this identifier. The user may have been deleted.';
+      if (e.toString().contains(error)) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('This Account Do not Exist')));
+      } else {
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Network Problems')));
+      }
+      print(e);
     });
     print('done with login');
   }catch(e){

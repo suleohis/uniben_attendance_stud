@@ -53,6 +53,7 @@ class _SignUpState extends State<SignUp> {
                         children: [
                           TextField(
                             enabled: !isLoading,
+                            keyboardType: TextInputType.emailAddress,
                             onChanged: (val){
                               email = val;
                             },

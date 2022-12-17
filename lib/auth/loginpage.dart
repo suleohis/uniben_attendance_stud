@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:uniben_attendance_stud/auth/signuppage.dart';
@@ -54,6 +55,7 @@ class _LoginState extends State<Login> {
                       onChanged: (val){
                         email = val;
                       },
+                      keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                         hintText: 'Email/Username',
                         border: InputBorder.none,
