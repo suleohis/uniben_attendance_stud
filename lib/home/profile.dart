@@ -15,6 +15,7 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
+  FirebaseAuth auth = FirebaseAuth.instance;
 
   TextEditingController firstnameController = TextEditingController();
   TextEditingController lastnameController = TextEditingController();
@@ -23,6 +24,7 @@ class _ProfileState extends State<Profile> {
   @override
   void initState() {
     // TODO: implement initState
+    print(auth.currentUser!.uid);
     super.initState();
 
     SharedPreferences.getInstance().then((SharedPreferences prefs){
@@ -137,6 +139,7 @@ class _ProfileState extends State<Profile> {
                         pref.remove('lastname');
                         pref.remove('email');
                         pref.remove('matricNo');
+                        pref.remove('logged_in');
                         FirebaseAuth.instance.signOut();
                         Navigator.pop(context);
                         Navigator.pushReplacement(context,

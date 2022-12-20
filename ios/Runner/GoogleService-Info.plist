@@ -3,21 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>497763609499-h4ig43n776ttvh52bd3ahgbpsqom52ls.apps.googleusercontent.com</string>
+	<string>721444744465-brt1h8mst16i6o4oltrcu6vsmv6nn3lh.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.497763609499-h4ig43n776ttvh52bd3ahgbpsqom52ls</string>
+	<string>com.googleusercontent.apps.721444744465-brt1h8mst16i6o4oltrcu6vsmv6nn3lh</string>
 	<key>API_KEY</key>
-	<string>AIzaSyBdPKI-dSOFcCZ__3H4tz-KKlvR6VU0KcQ</string>
+	<string>AIzaSyB3Y1VpeDEf6sse9FaBoiOzso6BTzxC8TM</string>
 	<key>GCM_SENDER_ID</key>
-	<string>497763609499</string>
+	<string>721444744465</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.example.unibenAttendanceStud</string>
 	<key>PROJECT_ID</key>
-	<string>attentance-bfd91</string>
+	<string>attendance-d3a8e</string>
 	<key>STORAGE_BUCKET</key>
-	<string>attentance-bfd91.appspot.com</string>
+	<string>attendance-d3a8e.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:497763609499:ios:86e477860c1cbfc4a94f3e</string>
+	<string>1:721444744465:ios:a73e3a99c8da0e178130b0</string>
 </dict>
 </plist>
